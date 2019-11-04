@@ -9,7 +9,7 @@ stmt_list       :  stmt (NEWLINE stmt )* ;
 stmt : assignment_stmt 
 	 | print_stmt
 	 | if_stmt
-	 |  NEWLINE* '{' NEWLINE* stmt  NEWLINE* '}'  NEWLINE*
+	 |  NEWLINE* '{' NEWLINE* stmt  NEWLINE* '}' NEWLINE*
 	;	
 	
 //stmt_list       : stmt (NEWLINE stmt)* ;
@@ -19,8 +19,8 @@ assignment_stmt : variable '=' expr
 print_stmt : PRINT '(' '"' print_string '"' ')' 
 		   | PRINT'(' '\'' print_string '\'' ')' 
 		   ;
-if_stmt : IF expr  NEWLINE* '{' NEWLINE* stmt NEWLINE* '}';
-		   
+//if_stmt : IF expr  NEWLINE* '{' NEWLINE* stmt NEWLINE* '}' (ELSE  stmt )?;
+	if_stmt : IF expr  stmt (ELSE  stmt )?;	   
 
 expr : 
 		expr mul_div_op expr
