@@ -4,68 +4,40 @@
  */
 grammar PythonB;
 
-
-stmt 	: expr NEWLINE
-		| print_stmt
-		| IDENTIFIER '=' expr NEWLINE
-		| NEWLINE
-		| declarations
-		|
-		;
-		
-stmt_list  : stmt ( ';' stmt )* ';';		
-print_stmt : PRINT '(' '"' STRING '"' ')'
-		   | PRINT'(' '\'' STRING '\'' ')'
+stmt : assignment_stmt
+	 | print_stmt
+	;	
+	
+stmt_list       : stmt ( ';' stmt )* ';' ;
+assignment_stmt : variable '=' expr 
+				;
+				
+print_stmt : PRINT '(' '"' variable '"' ')'
+		   | PRINT'(' '\'' variable '\'' ')' 
 		   ;
 		   
-declarations : IDENTIFIER '=' VALUE ';';
-VALUE : INTEGER
-	  ;
 
-expr : expr mul_div_op expr 
-	 | expr add_sub_op expr
-	 | expr rel_op expr
-	 | number
-	 | IDENTIFIER
-	 | '(' expr ')'
-	 ;
-		
-		
-variable : IDENTIFIER ;
+expr : 
+//		expr mul_div_op expr
+//     | expr add_sub_op expr
+//     | expr rel_op expr
+     | number
+     | IDENTIFIER
+     | '(' expr ')'
+     ;
+     
 number : sign? INTEGER ;
 sign   : '+' | '-' ;
 
-mul_div_op : MUL_OP | DIV_OP ;
-add_sub_op : ADD_OP | SUB_OP ;
-rel_op     : EQ_OP | NE_OP | LT_OP | LE_OP | GT_OP | GE_OP ;
-
-
 PRINT   : 'print';
-STRING : [a-zA-Z0-9]+; // + is zero or more, using + for empty string
-IDENTIFIER : [a-zA-Z][a-zA-Z0-9]+ ; // * is one or more
-INTEGER    : [0-9]+ ;
+variable : IDENTIFIER;
+IDENTIFIER : [a-zA-Z][a-zA-Z0-9]* ;
+		   
+print_string : STRINGS;	
+STRINGS : [a-z]+;	
+INTEGER : [0-9]+;
 
-
-MUL_OP :   '*' ;
-DIV_OP :   '/' ;
-ADD_OP :   '+' ;
-SUB_OP :   '-' ;
-
-EQ_OP : '=' ;
-NE_OP : '<>' ;
-LT_OP : '<' ;
-LE_OP : '<=' ;
-GT_OP : '>' ;
-GE_OP : '>=' ;
+		 // + is zero or more, using + for empty string
 
 NEWLINE : '\r'? '\n' -> skip  ;
 WS      : [ \t]+ -> skip ; 
-
-
-
-//r  : 'hello' ID ;         // match keyword hello followed by an identifier
-
-//ID : [a-z]+ ;             // match lower-case identifiers
-//
-//WS : [ \t\r\n]+ -> skip ; // skip spaces, tabs, newlines
-
