@@ -4,17 +4,22 @@
  */
 grammar PythonB;
 
-stmt : assignment_stmt
+program :  stmt_list;
+
+stmt : assignment_stmt 
 	 | print_stmt
+	 | if_stmt
+	 |
 	;	
 	
-stmt_list       : stmt ( ';' stmt )* ';' ;
+stmt_list       : stmt ( ';' stmt )* ;
+				 
 assignment_stmt : variable '=' expr
-				;
-				
-print_stmt : PRINT '(' '"' print_string '"' ')'
+				;	
+print_stmt : PRINT '(' '"' print_string '"' ')' 
 		   | PRINT'(' '\'' print_string '\'' ')' 
 		   ;
+if_stmt : IF expr '{' stmt '}';
 		   
 
 expr : 
@@ -36,7 +41,8 @@ mul_div_op : MUL_OP | DIV_OP ;
 add_sub_op : ADD_OP | SUB_OP ;
 rel_op     : EQ_OP | NE_OP | LT_OP | LE_OP | GT_OP | GE_OP ;
 
-
+IF : 'if';
+ELSE : 'else';
 
 INTEGER : [0-9]+;
 IDENTIFIER : [a-zA-Z][a-zA-Z0-9]*;
@@ -63,4 +69,4 @@ GT_OP : '>' ;
 GE_OP : '>=' ;
 
 NEWLINE : '\r'? '\n' -> skip  ;
-WS      : [ \t]+ -> skip ; 
+WS      : [ \t]+ -> skip ;
