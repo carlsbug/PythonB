@@ -9,7 +9,7 @@ stmt_list       :  stmt (NEWLINE stmt )* ;
 stmt : assignment_stmt 
 	 | print_stmt
 	 | if_stmt
-	 
+	 |  NEWLINE* '{' NEWLINE* stmt  NEWLINE* '}'  NEWLINE*
 	;	
 	
 //stmt_list       : stmt (NEWLINE stmt)* ;
