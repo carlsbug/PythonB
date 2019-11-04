@@ -10,10 +10,10 @@ stmt : assignment_stmt
 	 | print_stmt
 	 | if_stmt
 	 | while_loop
-	 |  NEWLINE* '{' NEWLINE* stmt  NEWLINE* '}' NEWLINE*
+	 | NEWLINE* '{' NEWLINE* stmt  NEWLINE* '}' NEWLINE*
 	;	
 	
-stmt_list       :  stmt (NEWLINE stmt )* ;
+stmt_list       :  stmt (NEWLINE stmt )* NEWLINE* ;
 	 
 assignment_stmt : variable '=' expr
 				;	
