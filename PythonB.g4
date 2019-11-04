@@ -31,6 +31,8 @@ expr :
      | number
      | IDENTIFIER
      | '(' expr ')'
+     | '\'' expr '\'' 
+     | '"'  expr '"'  
      ;
      
 number : sign? INTEGER ;
