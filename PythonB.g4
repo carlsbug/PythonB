@@ -19,7 +19,7 @@ assignment_stmt : variable '=' expr
 print_stmt : PRINT '(' '"' print_string '"' ')' 
 		   | PRINT'(' '\'' print_string '\'' ')' 
 		   ;
-if_stmt : IF expr '{' stmt '}';
+if_stmt : IF expr '{' stmt ';' '}';
 		   
 
 expr : 
