@@ -5,22 +5,24 @@
 grammar PythonB;
 
 program :  stmt_list;
-stmt_list       :  stmt (NEWLINE stmt )* ;
+//stmt_list       :  stmt (NEWLINE stmt )* ;
 stmt : assignment_stmt 
 	 | print_stmt
 	 | if_stmt
+	 | while_loop
 	 |  NEWLINE* '{' NEWLINE* stmt  NEWLINE* '}' NEWLINE*
 	;	
 	
-//stmt_list       : stmt (NEWLINE stmt)* ;
+stmt_list       :  stmt (NEWLINE stmt )* ;
 	 
 assignment_stmt : variable '=' expr
 				;	
 print_stmt : PRINT '(' '"' print_string '"' ')' 
 		   | PRINT'(' '\'' print_string '\'' ')' 
 		   ;
-//if_stmt : IF expr  NEWLINE* '{' NEWLINE* stmt NEWLINE* '}' (ELSE  stmt )?;
-	if_stmt : IF expr  stmt (ELSE  stmt )?;	   
+if_stmt : IF expr  stmt (ELSE  stmt )?; // ? is 0 or 1 time
+while_loop : WHILE expr stmt;
+ 
 
 expr : 
 		expr mul_div_op expr
@@ -43,14 +45,15 @@ rel_op     : EQ_OP | NE_OP | LT_OP | LE_OP | GT_OP | GE_OP ;
 
 IF : 'if';
 ELSE : 'else';
+WHILE : 'while';
 
 INTEGER : [0-9]+;
 IDENTIFIER : [a-zA-Z][a-zA-Z0-9]*;
-EmptyString :'\n' ;
+//EmptyString :'\n' ;
 
 print_string : IDENTIFIER
 			 | STRINGS
-			 |
+			 | 
 			 ;
 STRINGS : [a-zA-Z0-9]+;	
 
