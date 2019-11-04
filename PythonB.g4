@@ -10,6 +10,7 @@ stmt : assignment_stmt
 	 | print_stmt
 	 | if_stmt
 	 | while_loop
+	 | funtion
 	 | NEWLINE* '{' NEWLINE* stmt  NEWLINE* '}' NEWLINE*
 	;	
 	
@@ -22,7 +23,9 @@ print_stmt : PRINT '(' '"' print_string '"' ')'
 		   ;
 if_stmt : IF expr  stmt (ELSE  stmt )?; // ? is 0 or 1 time
 while_loop : WHILE expr stmt;
+funtion : DEF funt_name '(' ')' stmt_list;
  
+funt_name : IDENTIFIER;
 
 expr : 
 		expr mul_div_op expr
@@ -48,10 +51,10 @@ rel_op     : EQ_OP | NE_OP | LT_OP | LE_OP | GT_OP | GE_OP ;
 IF : 'if';
 ELSE : 'else';
 WHILE : 'while';
+DEF : 'def';
 
 INTEGER : [0-9]+;
 IDENTIFIER : [a-zA-Z][a-zA-Z0-9]*;
-//EmptyString :'\n' ;
 
 print_string : IDENTIFIER
 			 | STRINGS
