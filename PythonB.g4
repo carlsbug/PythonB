@@ -5,21 +5,21 @@
 grammar PythonB;
 
 program :  stmt_list;
-
+stmt_list       :  stmt (NEWLINE stmt )* ;
 stmt : assignment_stmt 
 	 | print_stmt
 	 | if_stmt
-	 |
+	 
 	;	
 	
-stmt_list       : stmt ( ';' stmt )* ;
-				 
+//stmt_list       : stmt (NEWLINE stmt)* ;
+	 
 assignment_stmt : variable '=' expr
 				;	
 print_stmt : PRINT '(' '"' print_string '"' ')' 
 		   | PRINT'(' '\'' print_string '\'' ')' 
 		   ;
-if_stmt : IF expr '{' stmt ';' '}';
+if_stmt : IF expr  NEWLINE* '{' NEWLINE* stmt NEWLINE* '}';
 		   
 
 expr : 
@@ -46,6 +46,7 @@ ELSE : 'else';
 
 INTEGER : [0-9]+;
 IDENTIFIER : [a-zA-Z][a-zA-Z0-9]*;
+EmptyString :'\n' ;
 
 print_string : IDENTIFIER
 			 | STRINGS
@@ -68,5 +69,6 @@ LE_OP : '<=' ;
 GT_OP : '>' ;
 GE_OP : '>=' ;
 
-NEWLINE : '\r'? '\n' -> skip  ;
+NEWLINE : [\r\n]+;
+//NEWLINE : '\r'? '\n' -> skip  ;
 WS      : [ \t]+ -> skip ;
