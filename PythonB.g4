@@ -32,7 +32,7 @@ stmt : assignment_stmt
 	 
 assignment_stmt : NEWLINE* variable '=' expr NEWLINE*
 				;	
-print_stmt : PRINT '('string ')' 
+print_stmt : PRINT '('string')'
 		   ;
 if_stmt : IF NEWLINE* expr NEWLINE* '{' stmt_list '}' NEWLINE* (ELSE NEWLINE* '{' stmt_list '}' NEWLINE* )?; // ? is 0 or 1 time
 while_loop : WHILE NEWLINE* expr NEWLINE* '{' stmt_list '}';
@@ -74,10 +74,10 @@ IDENTIFIER : [a-zA-Z][a-zA-Z0-9]*;
 
 string : STRING;
 STRING : 
-// '\'' [a-zA-Z0-9~!@#$%^&*()_+{}|:<>?,\\ ]*  '\''
-//		| '"'[a-zA-Z0-9~!@#$%^&*()_+{}|:<>?,\\ ]*  '"'
-		'"'.*'"' 
-		| '\''.*'\''
+ '\'' [a-zA-Z0-9~!@#$%^&*()_+{}|:<>?,\\ ]*  '\''
+		| '"'[a-zA-Z0-9~!@#$%^&*()_+{}|:<>?,\\ ]*  '"'
+//		|'"'.*'"' 
+//		| '\''.*'\''
 		;	
 		
 MUL_OP :   '*' ;
