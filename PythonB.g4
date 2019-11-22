@@ -5,21 +5,34 @@
  
 grammar PythonB;
 
-program : declarations_list stmt_list
-		| stmt_list
+@header {
+    import wci.intermediate.TypeSpec;
+}
+
+//program : header mainBlock stmt_list
+//		| header stmt_list
+//		|
+//		;
+program : header mainBlock
 		|
 		;
+header :;
+mainBlock: block;
+block : declarations compoundStmt;
 
-declarations_list : declarations (NEWLINE declarations)* NEWLINE*;
+
 declarations : decl_list;
 decl_list    : decl (NEWLINE decl)* NEWLINE*;
-decl         : var_list '=' type_id ;
-var_list     : var_id  (NEWLINE var_id)* NEWLINE*;
-var_id       : IDENTIFIER ;
-type_id      : string //string
-			 | number //int
-			 ;
-			 
+decl         : var_id '=' values ;
+//var_list     : var_id  (NEWLINE var_id)* NEWLINE*;
+var_id       : IDENTIFIER;
+//type_id      : string //string
+//			 | number //int
+//			 ;
+values       :  number | string;
+
+
+compoundStmt : stmt_list (NEWLINE stmt_list)* NEWLINE*;	 
 stmt_list    :  NEWLINE* stmt (NEWLINE stmt )* NEWLINE* 
 			 ;
 			 
@@ -28,6 +41,7 @@ stmt : assignment_stmt
 	 | if_stmt
 	 | while_loop
 	 | funtion_stmt
+	 |
 	;	
 	 
 assignment_stmt : NEWLINE* variable '=' expr NEWLINE*
@@ -45,17 +59,35 @@ parameter : IDENTIFIER
 		  | 
 		  ;
 
-expr : expr mul_div_op expr
-     | expr add_sub_op expr
-     | expr rel_op expr
-     | number
-     | IDENTIFIER
-     | '(' expr ')' 
-     | STRING
+//expr : expr mul_div_op expr
+//     | expr add_sub_op expr
+//     | expr rel_op expr
+//     | number
+//     | IDENTIFIER
+//     | '(' expr ')' 
+//     | STRING
+//     ;
+expr locals [ TypeSpec type = null ] 
+	 : expr mul_div_op expr # mulDivExpr
+     | expr add_sub_op expr # addSubExpr
+     | expr rel_op expr # relOpExpr
+  	 | number               # unsignedNumberExpr
+   	 | signedNumber         # signedNumberExpr
+     | variable # variableExpr
+     | '(' expr ')'  # parenExpr
+     | string # stringExpr
      ;
      
-number : sign? INTEGER ;
-sign   : '+' | '-' ;
+//number : sign? INTEGER ;
+number locals [ TypeSpec type = null ]
+    : INTEGER    # integerConst
+    | FLOAT      # floatConst
+    ;
+    
+signedNumber locals [ TypeSpec type = null ] 
+			: sign number 
+			;
+sign : ADD_OP | SUB_OP ;
 
 PRINT   : 'print';
 variable : IDENTIFIER;
@@ -70,15 +102,15 @@ WHILE : 'while';
 FUNCTION : 'def';
 
 INTEGER : [0-9]+;
+FLOAT      : [0-9]+ '.' [0-9]+ ;
 IDENTIFIER : [a-zA-Z][a-zA-Z0-9]*;
 
 string : STRING;
-STRING : 
- '\'' [a-zA-Z0-9~!@#$%^&*()_+{}|:<>?,\\ ]*  '\''
-		| '"'[a-zA-Z0-9~!@#$%^&*()_+{}|:<>?,\\ ]*  '"'
-//		|'"'.*'"' 
-//		| '\''.*'\''
-		;	
+STRING : '\'' [a-zA-Z0-9~!@#$%^&*()_+{}|:<>?,\\ ]*  '\''
+		 | '"'[a-zA-Z0-9~!@#$%^&*()_+{}|:<>?,\\ ]*  '"'
+//		 |'"'.*'"' 
+//		 | '\''.*'\''
+		 ;	
 		
 MUL_OP :   '*' ;
 DIV_OP :   '/' ;

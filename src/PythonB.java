@@ -3,41 +3,63 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.PrintWriter;
 
 public class PythonB 
 {
     public static void main(String[] args) throws Exception 
     {
-        String inputFile = "sample.py";
+        String inputFile = ("/Users/keonmin/desktop/sample.py");
+//        String inputFile = null;
         
-        // Create the input stream.
+//        // Create the input stream.
+//        if (args.length > 0) inputFile = args[0];
+//        InputStream is = (inputFile != null)
+//                                ? new FileInputStream(inputFile)
+//                                : System.in;
+//        
+//        // Create the character stream from the input stream.
+//        CharStream cs = CharStreams.fromStream(is);
+//        
+//        // Create a lexer which scans the character stream
+//        // to create a token stream.
+//        PythonBLexer lexer = new PythonBLexer(cs);
+//        CommonTokenStream tokens = new CommonTokenStream(lexer);
+//        
+//        // Dump the token stream.
+//        System.out.println("Tokens:");
+//        tokens.fill();
+//        for (Token token : tokens.getTokens()) {
+//            System.out.println(token.toString());
+//        }
+//        
+//        // Create a parser which parses the token stream
+//        // to create a parse tree.
+//        PythonBParser parser = new PythonBParser(tokens);
+//        ParseTree tree = parser.program();
+//        
+//        // Print the parse tree in Lisp format.
+//        System.out.println("\nParse tree (Lisp format):");
+//        System.out.println(tree.toStringTree(parser));
+        
         if (args.length > 0) inputFile = args[0];
         InputStream is = (inputFile != null)
                                 ? new FileInputStream(inputFile)
                                 : System.in;
         
-        // Create the character stream from the input stream.
         CharStream cs = CharStreams.fromStream(is);
-        
-        // Create a lexer which scans the character stream
-        // to create a token stream.
         PythonBLexer lexer = new PythonBLexer(cs);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        
-        // Dump the token stream.
-        System.out.println("Tokens:");
-        tokens.fill();
-        for (Token token : tokens.getTokens()) {
-            System.out.println(token.toString());
-        }
-        
-        // Create a parser which parses the token stream
-        // to create a parse tree.
         PythonBParser parser = new PythonBParser(tokens);
         ParseTree tree = parser.program();
         
-        // Print the parse tree in Lisp format.
-        System.out.println("\nParse tree (Lisp format):");
-        System.out.println(tree.toStringTree(parser));
+        PythonB1Visitor pass1 = new PythonB1Visitor();
+        pass1.visit(tree);
+        
+        PrintWriter jFile = pass1.getAssemblyFile();
+//
+//        PythonB2Visitor pass2 = new PythonB2Visitor(jFile);
+        jFile.close(); // to separate pass1 and pass2
+//        pass2.visit(tree);
     }
 }
