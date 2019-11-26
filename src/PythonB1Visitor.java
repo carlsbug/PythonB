@@ -15,12 +15,14 @@ public class PythonB1Visitor extends PythonBBaseVisitor<Integer>
     private SymTabEntry programId;
     private ArrayList<SymTabEntry> variableIdList;
     private PrintWriter jFile;
+    private String programName;
     
-    public PythonB1Visitor()
+    public PythonB1Visitor(String programName)
     {
         // Create and initialize the symbol table stack.
         symTabStack = SymTabFactory.createSymTabStack();
         Predefined.initialize(symTabStack);
+        this.programName = programName;
     }
     
     public PrintWriter getAssemblyFile() { return jFile; }
@@ -34,15 +36,14 @@ public class PythonB1Visitor extends PythonBBaseVisitor<Integer>
         CrossReferencer crossReferencer = new CrossReferencer();
         crossReferencer.print(symTabStack);
         
-        return value;
+     
+        return  value;
     }
-    
-    @Override 
-    public Integer visitHeader(PythonBParser.HeaderContext ctx) 
-    { 
-        String programName = "sample";
-        		//ctx.IDENTIFIER().toString();
-        
+    @Override public Integer visitMainBlock(PythonBParser.MainBlockContext ctx)
+    { return visitChildren(ctx); }
+    @Override
+    public Integer visitBlock(PythonBParser.BlockContext ctx) { 
+ 
         programId = symTabStack.enterLocal(programName);
         programId.setDefinition(DefinitionImpl.PROGRAM);
         programId.setAttribute(ROUTINE_SYMTAB, symTabStack.push());
@@ -66,9 +67,9 @@ public class PythonB1Visitor extends PythonBBaseVisitor<Integer>
         jFile.println();
         jFile.println(".field private static _runTimer LRunTimer;");
         jFile.println(".field private static _standardIn LPascalTextIn;");
-
-        return visitChildren(ctx);
-    }
+   
+    	return visitChildren(ctx); 
+    	}
 
     @Override 
     public Integer visitDeclarations(PythonBParser.DeclarationsContext ctx) 
@@ -93,12 +94,19 @@ public class PythonB1Visitor extends PythonBBaseVisitor<Integer>
     @Override 
     public Integer visitDecl(PythonBParser.DeclContext ctx) 
     { 
-        jFile.println("\n; " + ctx.getText() + "\n");
+//        jFile.println("\n; " + ctx.getText() + "\n");
+    	String temp = ctx.getText();
+        jFile.println("\n; " + temp.replaceAll("\\s",""));
         return visitChildren(ctx); 
     }
-
     @Override 
-    public Integer visitVar_id(PythonBParser.Var_idContext ctx) 
+    public Integer visitVarList(PythonBParser.VarListContext ctx) 
+    { 
+        variableIdList = new ArrayList<SymTabEntry>();
+        return visitChildren(ctx);         
+    }
+    @Override 
+    public Integer visitVarId(PythonBParser.VarIdContext ctx) 
     {
         String variableName = ctx.IDENTIFIER().toString();
         
@@ -110,44 +118,44 @@ public class PythonB1Visitor extends PythonBBaseVisitor<Integer>
     }
     
     @Override 
-    public Integer visitValues(PythonBParser.ValuesContext ctx)
+    public Integer visitTypeId(PythonBParser.TypeIdContext ctx) 
     { 
-//    	String typeName = ctx.IDENTIFIER().toString();
-        Integer value = visitChildren(ctx);
-        System.out.println("This is value::::::::!!!:"+value);
-//        if())
-//        {
-//        	
-//        }
-//        ctx.type = ctx.signedNumber().type;
-//        
-//        TypeSpec type;
-//        String   typeIndicator;
-//        
-//        if (typeName.equalsIgnoreCase("integer")) {
-//            type = Predefined.integerType;
-//            typeIndicator = "I";
-//        }
-//        else if (typeName.equalsIgnoreCase("real")) {
-//            type = Predefined.realType;
-//            typeIndicator = "F";
-//        }
-//        else {
-//            type = null;
-//            typeIndicator = "?";
-//        }
-                    
-//        for (SymTabEntry id : variableIdList) {
-//            id.setTypeSpec(type);
-//            
-//            // Emit a field declaration.
-//            jFile.println(".field private static " +
-//                               id.getName() + " " + typeIndicator);
-//        }
+        String typeName = ctx.IDENTIFIER().toString();
         
-        return value; 
+        TypeSpec type;
+        String   typeIndicator;
+        
+        if (typeName.equalsIgnoreCase("integer")) {
+            type = Predefined.integerType;
+            typeIndicator = "I";
+        }
+        else if (typeName.equalsIgnoreCase("real")) {
+            type = Predefined.realType;
+            typeIndicator = "F";
+        }
+        else if (typeName.equalsIgnoreCase("char")) {
+            type = Predefined.charType;
+            typeIndicator = "C";
+        }
+        else if (typeName.equalsIgnoreCase("string")) {
+            type = Predefined.stringType;
+            typeIndicator = "Ljava/lang/String;";
+        }
+        else {
+            type = null;
+            typeIndicator = "?";
+        }
+                    
+        for (SymTabEntry id : variableIdList) {
+            id.setTypeSpec(type);
+            
+            // Emit a field declaration.
+            jFile.println(".field private static " +
+                               id.getName() + " " + typeIndicator);
+        }
+        
+        return visitChildren(ctx); 
     }
-
     @Override 
     public Integer visitAddSubExpr(PythonBParser.AddSubExprContext ctx)
     {
@@ -238,11 +246,17 @@ public class PythonB1Visitor extends PythonBBaseVisitor<Integer>
         return visitChildren(ctx); 
     }
     
+   
     @Override 
-    public Integer visitParenExpr(PythonBParser.ParenExprContext ctx)
+    public Integer visitCharExpr(PythonBParser.CharExprContext ctx)
     {
-        Integer value = visitChildren(ctx); 
-        ctx.type = ctx.expr().type;
-        return value;
+        ctx.type = Predefined.charType;
+        return visitChildren(ctx); 
+    }
+    
+    public Integer visitStringExpr(PythonBParser.StringExprContext ctx)
+    {
+    	ctx.type = Predefined.stringType;
+        return visitChildren(ctx); 
     }
 }

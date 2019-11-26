@@ -27,6 +27,7 @@ public class Predefined
     public static TypeSpec realType;
     public static TypeSpec booleanType;
     public static TypeSpec charType;
+    public static TypeSpec stringType;
     public static TypeSpec undefinedType;
 
     // Predefined identifiers.
@@ -57,7 +58,8 @@ public class Predefined
     public static SymTabEntry sqrtId;
     public static SymTabEntry succId;
     public static SymTabEntry truncId;
-
+    public static SymTabEntry stringId;
+    
     /**
      * Initialize a symbol table stack with predefined identifiers.
      * @param symTab the symbol table stack to initialize.
@@ -102,6 +104,13 @@ public class Predefined
         charType.setIdentifier(charId);
         charId.setDefinition(DefinitionImpl.TYPE);
         charId.setTypeSpec(charType);
+        
+//        // Type char.
+//        stringId = symTabStack.enterLocal("string");
+//        stringType = TypeFactory.createType(SCALAR);
+//        stringType.setIdentifier(stringId);
+//        stringId.setDefinition(DefinitionImpl.TYPE);
+//        stringId.setTypeSpec(stringType);
 
         // Undefined type.
         undefinedType = TypeFactory.createType(SCALAR);

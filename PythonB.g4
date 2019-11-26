@@ -1,124 +1,127 @@
 /**
- * Define a grammar called PythonB 
+	 * Define a grammar called PythonB
  * It is based on Python using curly braces, not indentation
  */
- 
+
 grammar PythonB;
 
 @header {
     import wci.intermediate.TypeSpec;
 }
 
-//program : header mainBlock stmt_list
-//		| header stmt_list
-//		|
-//		;
-program : header mainBlock
-		|
-		;
-header :;
-mainBlock: block;
-block : declarations compoundStmt;
+program   : mainBlock;
+mainBlock : block;
+block     : declarations funtion_stmt* NEWLINE main;
+main: FUNCTIONDEF MAIN '(' parameter_list ')' NEWLINE '{' compoundStmt '}' ;
 
+declarations : VAR declList;
+declList     : decl (NEWLINE decl)*;
+decl         : varList ':' typeId ;
+varList      : varId ( ',' varId )* ;
+varId        : NEWLINE* IDENTIFIER ;
+typeId       : NEWLINE* IDENTIFIER ;
 
-declarations : decl_list;
-decl_list    : decl (NEWLINE decl)* NEWLINE*;
-decl         : var_id '=' values ;
-//var_list     : var_id  (NEWLINE var_id)* NEWLINE*;
-var_id       : IDENTIFIER;
-//type_id      : string //string
-//			 | number //int
-//			 ;
-values       :  number | string;
-
-
-compoundStmt : stmt_list (NEWLINE stmt_list)* NEWLINE*;	 
-stmt_list    :  NEWLINE* stmt (NEWLINE stmt )* NEWLINE* 
+compoundStmt : stmt_list (NEWLINE stmt_list)*;
+stmt_list    : stmt (NEWLINE stmt )*
 			 ;
-			 
-stmt : assignment_stmt 
+
+stmt : assignment_stmt
 	 | print_stmt
 	 | if_stmt
 	 | while_loop
 	 | funtion_stmt
 	 |
-	;	
-	 
-assignment_stmt : NEWLINE* variable '=' expr NEWLINE*
-				;	
-print_stmt : PRINT '('string')'
+	;
+
+//assignment_stmt : NEWLINE* variable '=' expr NEWLINE*
+assignment_stmt : variable '=' expr
+				;
+print_stmt :  //PRINT '(' character ')' #charExpPrint
+		  // |
+		   PRINT '(' string ')'
 		   ;
-if_stmt : IF NEWLINE* expr NEWLINE* '{' stmt_list '}' NEWLINE* (ELSE NEWLINE* '{' stmt_list '}' NEWLINE* )?; // ? is 0 or 1 time
-while_loop : WHILE NEWLINE* expr NEWLINE* '{' stmt_list '}';
-funtion_stmt : FUNCTION funt_name NEWLINE* '(' parameter_list ')' NEWLINE*  '{'  stmt_list  '}';
- 
-funt_name : IDENTIFIER;
+// ? is 0 or 1 time
+//if_stmt : IF NEWLINE* expr NEWLINE* '{' stmt_list '}' NEWLINE* (ELSE NEWLINE* '{' stmt_list '}' NEWLINE* )?;
+
+if_stmt : IF expr NEWLINE '{' stmt_list '}' NEWLINE (ELSE NEWLINE '{' stmt_list '}')?;
+//while_loop : WHILE NEWLINE* expr NEWLINE* '{' stmt_list '}';
+while_loop : WHILE expr NEWLINE '{' stmt_list '}';
+funtion_stmt : FUNCTIONDEF funt_name '(' parameter_list ')' NEWLINE '{'  stmt_list  '}' 
+			 ; 
+
+funt_name : IDENTIFIER 
+		  ;
 
 parameter_list : parameter (',' parameter)*;
 parameter : IDENTIFIER
-		  | 
+		  |
 		  ;
 
-//expr : expr mul_div_op expr
-//     | expr add_sub_op expr
-//     | expr rel_op expr
-//     | number
-//     | IDENTIFIER
-//     | '(' expr ')' 
-//     | STRING
-//     ;
-expr locals [ TypeSpec type = null ] 
-	 : expr mul_div_op expr # mulDivExpr
-     | expr add_sub_op expr # addSubExpr
+expr locals [ TypeSpec type = null ]
+	 : expr mulDivOp expr # mulDivExpr
+     | expr addSubOp expr # addSubExpr
      | expr rel_op expr # relOpExpr
   	 | number               # unsignedNumberExpr
    	 | signedNumber         # signedNumberExpr
      | variable # variableExpr
      | '(' expr ')'  # parenExpr
-     | string # stringExpr
+     |  character # charExpr
+     | string # stringExpr //want to make sure if I need this
      ;
-     
+
 //number : sign? INTEGER ;
 number locals [ TypeSpec type = null ]
     : INTEGER    # integerConst
     | FLOAT      # floatConst
     ;
-    
-signedNumber locals [ TypeSpec type = null ] 
-			: sign number 
+
+signedNumber locals [ TypeSpec type = null ]
+			: sign number
 			;
 sign : ADD_OP | SUB_OP ;
 
 PRINT   : 'print';
 variable : IDENTIFIER;
 
-mul_div_op : MUL_OP | DIV_OP ;
-add_sub_op : ADD_OP | SUB_OP ;
+mulDivOp : MUL_OP | DIV_OP ;
+addSubOp : ADD_OP | SUB_OP ;
 rel_op     : EQ_OP | NE_OP | LT_OP | LE_OP | GT_OP | GE_OP ;
 
 IF : 'if';
 ELSE : 'else';
 WHILE : 'while';
-FUNCTION : 'def';
+FUNCTIONDEF : 'def';
+PROGRAM: 'PROGRAM';
+VAR: 'VAR';
+MAIN: 'main';
 
 INTEGER : [0-9]+;
 FLOAT      : [0-9]+ '.' [0-9]+ ;
 IDENTIFIER : [a-zA-Z][a-zA-Z0-9]*;
 
-string : STRING;
-STRING : '\'' [a-zA-Z0-9~!@#$%^&*()_+{}|:<>?,\\ ]*  '\''
-		 | '"'[a-zA-Z0-9~!@#$%^&*()_+{}|:<>?,\\ ]*  '"'
-//		 |'"'.*'"' 
+string :STRING
+;
+
+
+STRING : '\'' [a-zA-Z0-9~@#$%^&*()_+{}|:<>?,\\ ]*  '\''
+		 | '"'[a-zA-Z0-9~@#$%^&*()_+{}|:<>?,\\ ]*  '"'
+//		 |'"'.*'"'
 //		 | '\''.*'\''
-		 ;	
-		
+		 ;
+
+character : CHAR
+;
+
+CHAR :'\''  ',' '\''
+|'\'' '!''\'';
+
 MUL_OP :   '*' ;
 DIV_OP :   '/' ;
 ADD_OP :   '+' ;
 SUB_OP :   '-' ;
 
-EQ_OP : '=' ;
-NE_OP : '<>' ;
+EQ_OP : '==' ;
+NE_OP : '!=' ;
 LT_OP : '<' ;
 LE_OP : '<=' ;
 GT_OP : '>' ;
