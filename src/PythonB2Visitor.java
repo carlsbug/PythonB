@@ -1,4 +1,5 @@
 import java.io.PrintWriter;
+import java.util.Hashtable;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 
@@ -6,12 +7,16 @@ import wci.intermediate.*;
 import wci.intermediate.symtabimpl.*;
 
 public class PythonB2Visitor extends PythonBBaseVisitor<Integer> {
-	String programName;
+	private String programName;
 	private PrintWriter jFile;
 	private static int index = 0;
+	private boolean methodFlag = false;
+	Hashtable<String, Integer> h;
 
-	public PythonB2Visitor(PrintWriter jFile) {
+	public PythonB2Visitor(PrintWriter jFile, String inputFile, Hashtable<String, Integer> h) {
 		this.jFile = jFile;
+		programName = inputFile;
+		this.h = h;
 	}
 
 	@Override
@@ -22,14 +27,35 @@ public class PythonB2Visitor extends PythonBBaseVisitor<Integer> {
 	}
 
 	@Override
-	public Integer visitMainBlock(PythonBParser.MainBlockContext ctx) {
-
+	public Integer visitBlock(PythonBParser.BlockContext ctx) {
+		
+		return visitChildren(ctx);
+	}
+	
+	@Override
+	public Integer visitWithDeclar(PythonBParser.WithDeclarContext ctx) {
+		
+//		String funcName = ctx.funt_name().getText();
+		methodFlag = true;
+//		jFile.println(".method private static " + funcName+ "()V");
+		
+//		Integer value = visitChildren(ctx);
+		
 		return visitChildren(ctx);
 	}
 
 	@Override
-	public Integer visitMain(PythonBParser.MainContext ctx) 
-	{ 
+	public Integer visitNoDeclar(PythonBParser.NoDeclarContext ctx) {
+		
+//		String funcName = ctx.funt_name().getText();
+		methodFlag = true;
+//		jFile.println(".method private static " + funcName+ "()V");
+//		Integer value = visitChildren(ctx);
+		return visitChildren(ctx);
+	}
+
+	@Override
+	public Integer visitMain(PythonBParser.MainContext ctx) {
 		// Emit the main program header.
 		jFile.println();
 		jFile.println(".method public static main([Ljava/lang/String;)V");
@@ -53,10 +79,9 @@ public class PythonB2Visitor extends PythonBBaseVisitor<Integer> {
 		jFile.println(".limit locals 16");
 		jFile.println(".limit stack 16");
 		jFile.println(".end method");
-		return value; 
+		return value;
 	}
 
-	
 	@Override
 	public Integer visitStmt(PythonBParser.StmtContext ctx) {
 		String temp = ctx.getText();
@@ -65,17 +90,30 @@ public class PythonB2Visitor extends PythonBBaseVisitor<Integer> {
 
 		return visitChildren(ctx);
 	}
-	
+
 	// local variable of function
 	@Override
 	public Integer visitAssignment_stmt(PythonBParser.Assignment_stmtContext ctx) {
+//		Integer value = visitChildren(ctx);
 		Integer value = visit(ctx.expr());
 		String typeIndicator = (ctx.expr().type == Predefined.integerType) ? "I"
 				: (ctx.expr().type == Predefined.realType) ? "F" : (ctx.expr().type == Predefined.charType) ? "C" : "?";
 		// Emit a field put instruction.
-		jFile.println(
-				"\tputstatic\t" + programName + "/" + ctx.variable().IDENTIFIER().toString() + " " + typeIndicator);
-
+		if(methodFlag)
+		{
+			String type = typeIndicator.toLowerCase();
+			
+			jFile.println(
+			"\t" + type + "store_" + h.get(ctx.variable().IDENTIFIER().toString()));
+		}
+		else
+			
+		{
+			jFile.println(
+					"\tputstatic\t" + programName + "/" + ctx.variable().IDENTIFIER().toString() + " " + typeIndicator);
+		}
+		
+		
 		return value;
 	}
 
@@ -89,17 +127,49 @@ public class PythonB2Visitor extends PythonBBaseVisitor<Integer> {
 		jFile.println("\tgoto L" + String.format("%03d", count));
 		jFile.print("L" + String.format("%03d", index++) + ":");
 		value = visit(ctx.stmt_list(0));
-
+		
 		return value;
 	}
+//	@Override
+//	public Integer visitPrint_stmt(PythonBParser.Print_stmtContext ctx) {
+//		jFile.println("\tgetstatic\t" + "java/lang/System/out Ljava/io/PrintStream;");
+//		Integer value = visit(ctx.string());
+//		jFile.println("\tinvokevirtual\t" + "java/io/PrintStream.print(Ljava/lang/String;)V ");
+//
+//		return value;
+//	}
+
 	@Override
-	public Integer visitPrint_stmt(PythonBParser.Print_stmtContext ctx) {
+	public Integer visitPrint(PythonBParser.PrintContext ctx) {
 		jFile.println("\tgetstatic\t" + "java/lang/System/out Ljava/io/PrintStream;");
 		Integer value = visit(ctx.string());
 		jFile.println("\tinvokevirtual\t" + "java/io/PrintStream.print(Ljava/lang/String;)V ");
 
 		return value;
 	}
+
+	@Override
+	public Integer visitSpecialMethod(PythonBParser.SpecialMethodContext ctx) {
+		jFile.println("\tgetstatic\t" + "java/lang/System/out Ljava/io/PrintStream;");
+		jFile.println("\tldc\t" + "\"나는 소현이다!\\n\"");
+		jFile.println("\tinvokevirtual\t" + "java/io/PrintStream.print(Ljava/lang/String;)V ");
+		jFile.println("\tgetstatic\t" + "java/lang/System/out Ljava/io/PrintStream;");
+		jFile.println("\tldc\t" + "\"나는 소현이다!\\n\" ");
+		jFile.println("\tinvokevirtual\t" + "java/io/PrintStream.print(Ljava/lang/String;)V ");
+		jFile.println("\tgetstatic\t" + "java/lang/System/out Ljava/io/PrintStream;");
+		jFile.println("\tldc\t" + "\"나는 소현이다!\\n\"");
+		jFile.println("\tinvokevirtual\t" + "java/io/PrintStream.print(Ljava/lang/String;)V ");
+		jFile.println("\tgetstatic\t" + "java/lang/System/out Ljava/io/PrintStream;");
+		jFile.println("\tldc\t" + "\"나는 소현이다!\\n\"");
+		jFile.println("\tinvokevirtual\t" + "java/io/PrintStream.print(Ljava/lang/String;)V ");
+		jFile.println("\tgetstatic\t" + "java/lang/System/out Ljava/io/PrintStream;");
+		jFile.println("\tldc\t" + "\"나는 소현이다!\\n\"");
+		jFile.println("\tinvokevirtual\t" + "java/io/PrintStream.print(Ljava/lang/String;)V ");
+
+		return visitChildren(ctx);
+	}
+
+	///////
 	@Override
 	public Integer visitWhile_loop(PythonBParser.While_loopContext ctx) {
 		int temp = index;
@@ -114,28 +184,33 @@ public class PythonB2Visitor extends PythonBBaseVisitor<Integer> {
 
 		return value;
 	}
-	@Override
-	public Integer visitFuntion_stmt(PythonBParser.Funtion_stmtContext ctx) {
-		return visitChildren(ctx);
-	}
+//	@Override
+//	public Integer visitFuntion_stmt(PythonBParser.Funtion_stmtContext ctx) {
+//		return visitChildren(ctx);
+//	}
+
+	
+	
+
 
 	@Override
 	public Integer visitStmt_list(PythonBParser.Stmt_listContext ctx) {
 		Integer value = visitChildren(ctx);
 		return value;
 	}
+
 	@Override
 	public Integer visitRelOpExpr(PythonBParser.RelOpExprContext ctx) {
 		Integer value = visitChildren(ctx);
 		String op = ctx.rel_op().getText();
 		String opcode;
-		if (op.equals(">")) { 
+		if (op.equals(">")) {
 			opcode = "if_icmpgt";
-		} else if (op.equals("<")) { 
+		} else if (op.equals("<")) {
 			opcode = "if_icmplt";
-		} else if (op.equals(">=")) { 
+		} else if (op.equals(">=")) {
 			opcode = "if_icmpge";
-		} else if (op.equals("<=")) { 
+		} else if (op.equals("<=")) {
 			opcode = "if_icmple";
 		} else if (op.equals("==")) {
 			opcode = "if_icmpeq";
@@ -146,6 +221,7 @@ public class PythonB2Visitor extends PythonBBaseVisitor<Integer> {
 
 		return value;
 	}
+
 	@Override
 	public Integer visitAddSubExpr(PythonBParser.AddSubExprContext ctx) {
 		Integer value = visitChildren(ctx);
@@ -167,6 +243,7 @@ public class PythonB2Visitor extends PythonBBaseVisitor<Integer> {
 
 		return value;
 	}
+
 	@Override
 	public Integer visitMulDivExpr(PythonBParser.MulDivExprContext ctx) {
 		Integer value = visitChildren(ctx);
@@ -198,17 +275,27 @@ public class PythonB2Visitor extends PythonBBaseVisitor<Integer> {
 		TypeSpec type = ctx.type;
 		String typeIndicator = (type == Predefined.integerType) ? "I"
 				: (type == Predefined.realType) ? "F" : (type == Predefined.charType) ? "C" : "?";
-
+		if(methodFlag)
+		{
+			jFile.println(
+			"\taload"		);
+		}
+		else
+			
+		{
+			jFile.println("\tgetstatic\t" + programName + "/" + variableName + " " + typeIndicator);
+		}
 		// Emit a field get instruction.
-		jFile.println("\tgetstatic\t" + programName + "/" + variableName + " " + typeIndicator);
+		
 
 		return visitChildren(ctx);
 	}
-	@Override
-	public Integer visitStringExpr(PythonBParser.StringExprContext ctx) {
-		Integer value = visitChildren(ctx);
-		return value;
-	}
+
+//	@Override
+//	public Integer visitStringExpr(PythonBParser.StringExprContext ctx) {
+//		Integer value = visitChildren(ctx);
+//		return value;
+//	}
 	@Override
 	public Integer visitString(PythonBParser.StringContext ctx) {
 		String value = ctx.getText();
